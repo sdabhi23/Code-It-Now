@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Home | CodeItNow</title>
+
+        <link rel="icon" href="/static/favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- Bootstrap core CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Material Design Bootstrap -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.0/css/mdb.min.css" rel="stylesheet">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <meta name="google-signin-client_id" content={{key}}>
+
+        <style type="text/css" media="screen">
+            html {
+                overflow-y: hidden;
+            }
+
+            body {
+                overflow: hidden;
+                background-color:burlywood;
+            }
+
+            #editor {
+                margin: 0;
+                position: absolute;
+                top: 10%;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 0;
+            }
+
+            .main {
+                margin-top:80px;
+                margin-bottom: 10%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .iopanel {
+                position: absolute;
+                top: 12%;
+                height: 100%;
+                margin-left: 50%;
+                z-index: 0;
+                background-color:burlywood;
+            }
+
+            nav {
+                height: 10%;
+            }
+        </style>
+    </head>
+    <body>
+        <!--Main Navigation-->
+        <nav class="mb-1 navbar fixed-top navbar-expand-sm navbar-dark brown">
+            <a class="navbar-brand" href="/"><strong>CodeItNow</strong></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-5" aria-controls="navbarSupportedContent-5" aria-expanded="true" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="signOut()">
+                        Logout <i class="fa fa-sign-out"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <!--Main Navigation-->
+
+        <div class="main col-6">
+            <div class="card" style="padding:16px;">
+                <center>
+                    <br>
+                    <br>
+                    <img id="avatar" class="rounded-circle z-depth-0" style="border: solid 1px black;">
+                    <br>
+                    <p id="welcome" style="font-weight:400;font-size:25px;"></p>
+                    <p style="font-weight:400;font-size:20px;">Currently editors for only the following languages are available!</p>
+                    <table style="table-layout: fixed; width: 65%;">
+                        <tr>
+                            <td style="padding: 5px">
+                                <a href="/editor/html"><button class="btn btn-lg light-blue darken-3" style="width: 100%;">HTML</button></a>
+                            </td>
+                            <td style="padding: 5px">
+                                <a href="/editor/c"><button class="btn btn-lg light-blue darken-3" style="width: 100%;">C Language</button></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px">
+                                <a href="/editor/py"><button class="btn btn-lg light-blue darken-3" style="width: 100%;">Python 3</button></a>
+                            </td>
+                            <td style="padding: 5px">
+                                <a href="/editor/java"><button class="btn btn-lg light-blue darken-3" style="width: 100%;">JAVA</button></a>
+                            </td>
+                        </tr>
+                    </table>
+                    <br>
+                    <br>
+                </center>
+            </div>
+        </div>
+
+        <script>
+            function get_cookie ( cookie_name ){
+                var results = document.cookie.match ( '(^|;) ?' + cookie_name + '=([^;]*)(;|$)' );
+                if ( results )
+                    return ( unescape ( results[2] ) );
+                else
+                    return null;
+            }
+
+            window.onload = check;
+            function check() {
+                var myCookie = get_cookie("id");
+                if (myCookie == null) {
+                    document.location.href = '/error401'
+                } else {
+                    document.getElementById("avatar").src = get_cookie("imgurl");
+                    document.getElementById("welcome").innerHTML = "Welcome " + get_cookie("name") + "!";
+                }
+            }
+
+            function signOut() {
+                gapi.load('client:auth2', function() {
+                    gapi.auth2.init().then(() => { 
+                        var auth2 = gapi.auth2.getAuthInstance();
+                        auth2.signOut().then(function () {
+                            console.log('User signed out.');
+                            document.cookie = "id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.cookie = "imgurl=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.cookie = "name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.location.href = "/";
+                        });
+                    })
+                });
+            }
+        </script>
+
+        <!-- Google SignIn -->
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <!-- JQuery -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- Bootstrap tooltips -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.min.js"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <!-- MDB core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.0/js/mdb.min.js"></script>
+    </body>
+</html>

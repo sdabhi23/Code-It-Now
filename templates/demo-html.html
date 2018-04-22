@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>HTML | CodeItNow</title>
+
+        <link rel="icon" href="/static/favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- Bootstrap core CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Material Design Bootstrap -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.0/css/mdb.min.css" rel="stylesheet">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <meta name="google-signin-client_id" content={{key}}>
+
+        <style type="text/css" media="screen">
+            html {
+                overflow-y: hidden;
+            }
+
+            body {
+                overflow: hidden;
+                background-color:burlywood;
+            }
+
+            #editor {
+                margin: 0;
+                position: absolute;
+                top: 20%;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 0;
+            }
+
+            .main {
+                margin-top:65px;
+            }
+
+            .iopanel {
+                position: absolute;
+                top: 20%;
+                margin-left: 50%;
+                z-index: 0;
+                background-color:white;
+            }
+
+            nav {
+                height: 10%;
+            }
+
+            #iframewrapper {
+                position: absolute;
+                top: 20%;
+                margin-left: 50%;
+                width: 50%;
+                height:100%;
+                -webkit-overflow-scrolling: touch;
+                background-color: #ffffff;
+                box-shadow:0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            }
+
+            #iframecontainer {
+                position: absolute;
+                top: 20%;
+                margin-left: 50%;
+                width: 50%;
+                height:100%;
+                -webkit-overflow-scrolling: touch;
+                background-color: #ffffff;
+            }
+
+            #iframeResult {
+                background-color: #ffffff;
+                height:100%;
+                width:100%;  
+            }
+        </style>
+    </head>
+    <body>
+        <!--Main Navigation-->
+        <nav class="mb-1 navbar fixed-top navbar-expand-sm navbar-dark brown">
+            <a class="navbar-brand" href="/main"><strong>CodeItNow</strong></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-5" aria-controls="navbarSupportedContent-5" aria-expanded="true" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="signOut()">
+                        Logout <i class="fa fa-sign-out"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <!--Main Navigation-->
+
+        <div class="main">
+            <div>
+                <button type="button" class="btn btn-danger" accesskey="u" data-toggle="modal" data-target="#uploadModal" >Upload <i class="fa fa-upload fa-lg"></i></button>
+                <button type="button" id="clear" class="btn btn-success" accesskey="l" onclick="cleardata()" >Clear <i class="fa fa-eraser"></i></button>
+                <button type="button" id="run" class="btn btn-primary" accesskey="r" >Render <i class="fa fa-angle-right"></i></button>
+            </div>
+            <pre id="editor" class="col-6" style="border-right:2px solid #e3e3e3"></pre>
+            <div id="iframecontainer col-6">
+                <div id="iframe">
+                    <div id="iframewrapper"></div>
+                </div>
+            </div>        
+        </div>
+
+        <div id="uploadModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+        
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Upload your file</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                        <div>
+                            <label for="input-file">Specify a file:</label><br>
+                            <input type="file" id="input-file">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="loadFileAsText()">Done <i class="fa fa-check"></i></button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times"></i></button>
+                </div>
+            </div>
+        
+            </div>
+        </div>
+
+        <script src="/static/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/static/src-noconflict/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            function get_cookie ( cookie_name ){
+                var results = document.cookie.match ( '(^|;) ?' + cookie_name + '=([^;]*)(;|$)' );
+                if ( results )
+                    return ( unescape ( results[2] ) );
+                else
+                    return null;
+            }
+
+            window.onload = check;
+            function check() {
+                var myCookie = get_cookie("id");
+                if (myCookie == null) {
+                    document.location.href = '/error401'
+                }
+            }
+
+            function signOut() {
+                gapi.load('client:auth2', function() {
+                    gapi.auth2.init().then(() => { 
+                        var auth2 = gapi.auth2.getAuthInstance();
+                        auth2.signOut().then(function () {
+                            console.log('User signed out.');
+                            document.cookie = "id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.cookie = "imgurl=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.cookie = "name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                            document.location.href = "/";
+                        });
+                    })
+                });
+            }
+
+            ace.require("ace/ext/language_tools");
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/terminal");
+            editor.session.setMode("ace/mode/html");
+            editor.setOptions=({
+                enableEmmet: true,
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                spellcheck: true
+            });
+            document.getElementById("editor").style.fontSize='15px';
+            document.getElementById("run").onclick = function() {submitTryit(1)};
+
+            function submitTryit(n) {
+                if(n==1) {
+                    var text = editor.getValue();
+                    var ifr = document.createElement("iframe");
+                    ifr.setAttribute("frameborder", "0");
+                    ifr.setAttribute("id", "iframeResult");
+                    ifr.setAttribute("name", "iframeResult");  
+                    document.getElementById("iframewrapper").innerHTML = "";
+                    document.getElementById("iframewrapper").appendChild(ifr);
+                    var ifrw = (ifr.contentWindow) ? ifr.contentWindow : (ifr.contentDocument.document) ? ifr.contentDocument.document : ifr.contentDocument;
+                    ifrw.document.open();
+                    ifrw.document.write(text);  
+                    ifrw.document.close();
+                    if (ifrw.document.body && !ifrw.document.body.isContentEditable) {
+                        ifrw.document.body.contentEditable = true;
+                        ifrw.document.body.contentEditable = false;
+                    }
+                } else if(n==0) {
+                    var ifr = document.createElement("iframe");
+                    ifr.setAttribute("frameborder", "0");
+                    ifr.setAttribute("id", "iframeResult");
+                    ifr.setAttribute("name", "iframeResult");  
+                    document.getElementById("iframewrapper").innerHTML = "";
+                    document.getElementById("iframewrapper").appendChild(ifr);
+                    var ifrw = (ifr.contentWindow) ? ifr.contentWindow : (ifr.contentDocument.document) ? ifr.contentDocument.document : ifr.contentDocument;
+                    ifrw.document.open();
+                    ifrw.document.write("");  
+                    ifrw.document.close();
+                    if (ifrw.document.body && !ifrw.document.body.isContentEditable) {
+                        ifrw.document.body.contentEditable = true;
+                        ifrw.document.body.contentEditable = false;
+                    }
+                }
+            }
+
+            function cleardata() {
+                submitTryit(0);
+            }
+
+            function loadFileAsText(){
+                var fileToLoad = document.getElementById("input-file").files[0];
+
+                var fileReader = new FileReader();
+                fileReader.onload = function(fileLoadedEvent){
+                    var textFromFileLoaded = fileLoadedEvent.target.result;
+                    editor.session.setValue(textFromFileLoaded);
+                };
+
+                fileReader.readAsText(fileToLoad, "UTF-8");
+            }
+        </script>
+
+        <!-- Google SignIn -->
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <!-- JQuery -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- Bootstrap tooltips -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.min.js"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <!-- MDB core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.0/js/mdb.min.js"></script>
+    </body>
+</html>
